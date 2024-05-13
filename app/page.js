@@ -1,70 +1,85 @@
-// import Upload from "@/components/FileUpload";
-// import Regular from "@/components/FileUpload";
-// import FileUpload from "@/components/FileUpload";
-// import { UserButton } from "@clerk/nextjs";
-"use client"
+"use client";
 
 import ImageGallery from "@/components/ImageGallery";
-import * as LR from '@uploadcare/blocks';
+import * as LR from "@uploadcare/blocks";
 LR.registerBlocks(LR);
 
 import { useEffect, useRef, useState } from "react";
 
 const Home = () => {
+  const [ImageIds, setImageIds] = useState([]);
+  // const [UploadedFiles, setUploadedFiles] = useState([])
+  const a = useRef();
 
-  const [ImageIds, setImageIds] = useState([])
-
-  const ctxProviderRef = useRef();
-
-  
   useEffect(() => {
-    const ctx = document.querySelector('lr-upload-ctx-provider')
-    // ctx.addEventListener('change', e => {
-    //     console.log("1",e.detail)
-    // })
+    const ctx = document.querySelector("lr-upload-ctx-provider");
 
-    ctx?.addEventListener("file-url-changed", e => {
-      console.log("2",e.detail)
-    setImageIds(prev => [...prev, e?.detail?.uuid])
-  })
+    ctx?.addEventListener("done-click", (e) => {
+      console.log("2a", e);
+      setImageIds((prev) => [...prev, e?.detail?.allEntries[0]?.uuid]);
+      a.current?.uploadCollection.clearAll();
+    });
 
-    return () => { ctx?.removeEventListener("file-url-changed", e => {
-        console.log("3",e.detail)
-      })
-    }
+    return () => {
+      ctx?.removeEventListener("done-click", (e) => {
+        console.log("3", e.detail);
+      });
+    };
+  }, []);
 
-  }, [])
-  
+  useEffect(() => {
+    const ctx = document.querySelector("lr-upload-ctx-provider");
 
-  return <>
-  <section>
+    ctx?.addEventListener("change", (e) => {
+      console.log("3 c", e);
+      setImageIds((prev) => [...prev, e?.detail?.allEntries[0]?.uuid]);
+    });
 
-<p>jwef</p> 
-{/* <lr-config
-        ctx-name="my-uploader"
-        pubkey="a4d807e9ac1619d9f4dd"
-      /> */}
+    return () => {
+      ctx?.removeEventListener("change", (e) => {
+        console.log("3 c", e);
+      });
+    };
+  }, []);
 
-<lr-config
-    ctx-name="my-uploader"
-    pubkey="a4d807e9ac1619d9f4dd"
-    max-local-file-size-bytes="10000000"
-    multiple-max="10"
-    source-list="local, url, camera, dropbox, gdrive"
-></lr-config>
-    
-    <lr-file-uploader-regular
-        ctx-name="my-uploader"
-        css-src={`https://cdn.jsdelivr.net/npm/@uploadcare/blocks@0.38.0/web/lr-file-uploader-regular.min.css`}
-        class="my-config"
-      />
+  return (
+    <>
+      <section>
+        <lr-config
+          ctx-name="my-uploader"
+          pubkey="a4d807e9ac1619d9f4dd"
+          max-local-file-size-bytes="10000000"
+          multiple-max="10"
+          source-list="local, url, camera, dropbox, gdrive"
+          confirmUpload
+          useCloudImageEditor
+          cloudImageEditorTabs
+          cropPreset
+        ></lr-config>
 
-      {/* Event Handler for Drag & Drop */}
-      <lr-upload-ctx-provider ctx-name="my-uploader"  />
-  </section>
-<ImageGallery ImageIds={ImageIds} />
+        <lr-file-uploader-regular
+          ctx-name="my-uploader"
+          css-src={`https://cdn.jsdelivr.net/npm/@uploadcare/blocks@0.38.0/web/lr-file-uploader-regular.min.css`}
+          class="my-config"
+          confirmUpload
+          useCloudImageEditor
+          cloudImageEditorTabs
+          cropPreset
+        />
 
-  </>
+        {/* Event Handler for Drag & Drop */}
+        <lr-upload-ctx-provider
+          ctx-name="my-uploader"
+          ref={a}
+          confirmUpload
+          useCloudImageEditor
+          cloudImageEditorTabs
+          cropPreset
+        />
+      </section>
+      <ImageGallery ImageIds={ImageIds} />
+    </>
+  );
 };
 
 export default Home;
